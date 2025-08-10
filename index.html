@@ -1,0 +1,998 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bitchat</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Font Awesome 6 CDN -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0f0f2d;
+            --text-color: #ffffff;
+            --pink: #e94560;
+            --blue: #3a8bfd;
+            --dark-blue: #0f0f2d;
+            --bubble-sent-bg: #3a8bfd;
+            --bubble-received-bg: #333;
+        }
+
+        .light-mode {
+            --bg: #f0f2f5;
+            --text-color: #000000;
+            --dark-blue: #ffffff;
+            --bubble-sent-bg: #0084ff;
+            --bubble-received-bg: #e4e6eb;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 400px;
+            height: 100vh;
+            max-height: 800px;
+            background-color: var(--dark-blue);
+            display: flex;
+            flex-direction: column;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .app-title {
+            text-align: center;
+            font-size: 36px;
+            color: var(--pink);
+            text-shadow: 0 0 10px var(--pink), 0 0 20px var(--pink);
+            padding: 20px 0;
+        }
+
+        
+        /* ---- NEW MENU BUTTON STYLES ---- */
+        .menu-item-btn {
+            display: block;
+            width: 100%;
+            padding: 12px 20px;
+            margin: 8px 0;
+            font-size: 16px;
+            font-weight: bold;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.3s ease;
+            text-align: left;
+        }
+        .menu-item-btn i {
+            margin-right: 10px;
+        }
+        #edit-profile-btn {
+            background: linear-gradient(45deg, #ff9a9e, #fad0c4);
+        }
+        #blocked-users-btn {
+            background: linear-gradient(45deg, #a1c4fd, #c2e9fb);
+        }
+        #theme-toggle-btn {
+            background: linear-gradient(45deg, #fbc2eb, #a6c1ee);
+        }
+        #logout-btn {
+            background: linear-gradient(45deg, #f7797d, #FBD786);
+        }
+        .menu-item-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+
+        /* ---- BAQI TUMHARA ORIGINAL CSS YAHAN RAHETA HAI ---- */
+
+        #auth-view, #app-view {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            width: 100%;
+            flex-grow: 1;
+            justify-content: center;
+        }
+
+        .form {
+            width: 100%;
+            max-width: 350px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .form input {
+            border-radius: 25px;
+            border: 2px solid var(--blue);
+            background: transparent;
+            color: var(--text-color);
+            padding: 12px 20px;
+            width: 100%;
+            font-family: 'Poppins', sans-serif;
+            font-size: 16px;
+        }
+        .form input::placeholder {
+            color: #ccc;
+        }
+
+        .form-button {
+            border-radius: 50px;
+            background: var(--pink);
+            color: white;
+            font-weight: bold;
+            padding: 12px 20px;
+            width: 100%;
+            border: none;
+            cursor: pointer;
+            font-family: 'Poppins', sans-serif;
+            font-size: 16px;
+            transition: box-shadow 0.3s ease;
+        }
+        .form-button:hover {
+            box-shadow: 0 0 15px var(--pink), 0 0 25px var(--pink);
+        }
+
+        .form-switch {
+            color: white;
+            font-size: 13px;
+            text-align: center;
+            margin-top: 15px;
+        }
+
+        .form-switch a {
+            color: var(--pink);
+            text-decoration: underline;
+            cursor: pointer;
+        }
+        
+        #error-message {
+            color: var(--pink);
+            text-align: center;
+            margin-top: 10px;
+            font-size: 14px;
+            min-height: 20px;
+        }
+        
+        /* App View */
+        #app-view {
+            display: none;
+            padding: 0;
+            justify-content: flex-start;
+        }
+        
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 15px;
+            background-color: rgba(0,0,0,0.2);
+            width: 100%;
+            flex-shrink: 0;
+        }
+        
+        .top-bar .app-title-small {
+            font-size: 24px;
+            color: var(--pink);
+            text-shadow: 0 0 5px var(--pink);
+        }
+        
+        .top-bar button {
+            background: none;
+            border: none;
+            color: var(--text-color);
+            font-family: 'Poppins', sans-serif;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        
+        .main-content {
+            flex-grow: 1;
+            width: 100%;
+            overflow-y: auto;
+            padding: 15px;
+        }
+
+        .bottom-nav {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 10px 0;
+            background-color: rgba(0,0,0,0.2);
+            width: 100%;
+            flex-shrink: 0;
+        }
+        
+        .bottom-nav button {
+            background: none;
+            border: none;
+            color: var(--text-color);
+            font-family: 'Poppins', sans-serif;
+            font-size: 16px;
+            cursor: pointer;
+            padding: 5px 10px;
+            position: relative;
+        }
+        
+        .badge {
+            position: absolute;
+            top: -5px;
+            right: -10px;
+            background-color: var(--pink);
+            color: white;
+            border-radius: 50%;
+            padding: 2px 6px;
+            font-size: 10px;
+            font-weight: bold;
+            display: none;
+        }
+        
+        .page {
+            display: none;
+        }
+        .page.active {
+            display: block;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.7);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: var(--bg);
+            margin: auto;
+            padding: 20px;
+            border: 1px solid var(--blue);
+            width: 90%;
+            max-width: 350px;
+            border-radius: 20px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .modal-content h2 {
+            color: var(--pink);
+        }
+
+        .modal-content input {
+            border-radius: 25px;
+            border: 2px solid var(--blue);
+            background: transparent;
+            color: var(--text-color);
+            padding: 12px 20px;
+            width: 100%;
+            font-family: 'Poppins', sans-serif;
+            font-size: 16px;
+        }
+        
+        .modal-button {
+             border-radius: 50px;
+            background: var(--pink);
+            color: white;
+            font-weight: bold;
+            padding: 12px 20px;
+            width: 100%;
+            border: none;
+            cursor: pointer;
+            font-family: 'Poppins', sans-serif;
+            font-size: 16px;
+        }
+
+        /* Chat styles */
+        #chat-view {
+            display: none;
+            flex-direction: column;
+            height: 100%;
+        }
+        
+        #chat-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 15px;
+            background-color: rgba(0,0,0,0.2);
+        }
+        
+        #chat-header button {
+            background: none;
+            border: none;
+            color: var(--text-color);
+            font-family: 'Poppins', sans-serif;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        #chat-messages {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .message-bubble {
+            padding: 10px 15px;
+            border-radius: 20px;
+            max-width: 70%;
+            word-wrap: break-word;
+        }
+        
+        .sent {
+            background-color: var(--bubble-sent-bg);
+            align-self: flex-end;
+            border-bottom-right-radius: 5px;
+        }
+        
+        .received {
+            background-color: var(--bubble-received-bg);
+            align-self: flex-start;
+            border-bottom-left-radius: 5px;
+        }
+
+        #chat-input-container {
+            display: flex;
+            padding: 15px;
+            gap: 10px;
+        }
+
+        #chat-input {
+            flex-grow: 1;
+            border-radius: 25px;
+            border: 2px solid var(--blue);
+            background: transparent;
+            color: var(--text-color);
+            padding: 10px 15px;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        #chat-send-btn {
+            background: var(--pink);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            padding: 0 20px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        .contact-item, .notification-item, .call-log-item, .blocked-user-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #333;
+        }
+        
+        .contact-item button, .notification-item button, .blocked-user-item button {
+             background: var(--pink);
+             color: white;
+             border: none;
+             border-radius: 15px;
+             padding: 5px 10px;
+             cursor: pointer;
+        }
+        .notification-item .reject-btn {
+            background-color: #555;
+            margin-left: 5px;
+        }
+
+        /* Call UI */
+        #call-view {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background-color: #000;
+            z-index: 1001;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #remote-video {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            object-fit: cover;
+        }
+        
+        #local-video {
+            position: absolute;
+            bottom: 20px; right: 20px;
+            width: 120px;
+            height: 160px;
+            border: 2px solid var(--pink);
+            border-radius: 10px;
+            background-color: #333;
+            cursor: move;
+        }
+
+        .call-info {
+            position: absolute;
+            top: 40px;
+            text-align: center;
+            color: white;
+            z-index: 1002;
+            background: rgba(0,0,0,0.5);
+            padding: 10px 20px;
+            border-radius: 20px;
+        }
+        .call-info .caller-emoji { font-size: 48px; }
+        .call-info .caller-name { font-size: 24px; margin-top: 10px; }
+        .call-info .call-status { font-size: 16px; margin-top: 5px; color: #ccc; }
+
+        .call-controls {
+            position: absolute;
+            bottom: 40px;
+            z-index: 1002;
+            display: flex;
+            gap: 20px;
+        }
+        
+        .call-controls button {
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        #end-call-btn { background-color: #e94560; color: white; }
+        .accept-call-btn { background-color: #4caf50; color: white; }
+        .reject-call-btn { background-color: #e94560; color: white; }
+        
+        .list-container .empty-state {
+            text-align: center;
+            margin-top: 50px;
+            color: #888;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+
+        <!-- Authentication View -->
+        <div id="auth-view">
+            <h1 class="app-title">Bitchat</h1>
+            
+            <!-- Login Form -->
+            <form id="login-form" class="form">
+                <input type="email" id="login-email" placeholder="Email" required>
+                <input type="password" id="login-password" placeholder="Password" required>
+                <button type="submit" class="form-button">Log In</button>
+            </form>
+            
+            <!-- Signup Form -->
+            <form id="signup-form" class="form" style="display: none;">
+                <input type="email" id="signup-email" placeholder="Email" required>
+                <input type="password" id="signup-password" placeholder="Password" required>
+                <button type="submit" class="form-button">Sign Up</button>
+            </form>
+
+            <div id="error-message"></div>
+
+            <div class="form-switch">
+                <span id="to-signup-text">Don't have an account? <a id="to-signup-link">Sign up</a></span>
+                <span id="to-login-text" style="display: none;">Already have an account? <a id="to-login-link">Log in</a></span>
+            </div>
+        </div>
+
+        <!-- Main App View -->
+        <div id="app-view">
+           <div class="top-bar">
+    <button id="menu-btn"><i class="fas fa-bars"></i> Menu</button>
+    <span class="app-title-small">Bitchat</span>
+    <button id="add-friend-btn"><i class="fas fa-user-plus"></i> Add Friend</button>
+</div>
+
+            <div class="main-content">
+                <!-- Home Page (Contacts List) -->
+                <div id="home-page" class="page active">
+                    <h2>Contacts</h2>
+                    <div id="contacts-list" class="list-container">
+                        <div class="empty-state">Add friends to start chatting!</div>
+                    </div>
+                </div>
+                <!-- Notifications Page -->
+                <div id="notifications-page" class="page">
+                    <h2>Notifications</h2>
+                    <div id="notifications-list" class="list-container">
+                        <div class="empty-state">No new notifications.</div>
+                    </div>
+                </div>
+                <!-- Calls Page -->
+                <div id="calls-page" class="page">
+                    <h2>Call Logs</h2>
+                    <div id="call-logs-list" class="list-container">
+                         <div class="empty-state">No call history.</div>
+                    </div>
+                </div>
+                <!-- Menu/Settings Page -->
+            <div id="menu-page" class="page">
+    <h2>Menu</h2>
+    <button class="menu-item-btn" id="edit-profile-btn"><i class="fas fa-user-edit"></i> Edit Profile</button>
+    <button class="menu-item-btn" id="blocked-users-btn"><i class="fas fa-user-slash"></i> Blocked Users</button>
+    <button class="menu-item-btn" id="theme-toggle-btn"><i class="fas fa-adjust"></i> Toggle Theme</button>
+    <button class="menu-item-btn" id="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</button>
+</div>
+            </div>
+            
+            <!-- Chat View (Initially hidden, shown inside main-content) -->
+            <div id="chat-view">
+                <div id="chat-header">
+    <button id="back-to-contacts-btn"><i class="fas fa-arrow-left"></i></button>
+    <span id="chat-contact-emoji"></span>
+    <h3 id="chat-contact-name"></h3>
+    <div style="flex-grow: 1;"></div>
+    <button id="voice-call-btn"><i class="fas fa-phone"></i></button>
+    <button id="video-call-btn"><i class="fas fa-video"></i></button>
+</div>
+                <div id="chat-messages"></div>
+                <div id="chat-input-container">
+                    <input type="text" id="chat-input" placeholder="Type a message...">
+                    <button id="chat-send-btn">Send</button>
+                </div>
+            </div>
+
+
+            <div class="bottom-nav">
+    <button id="nav-home">
+        <i class="fas fa-home"></i> Home
+    </button>
+    <button id="nav-notifications">
+        <i class="fas fa-bell"></i> Notifications
+        <span id="notifications-badge" class="badge"></span>
+    </button>
+    <button id="nav-calls">
+        <i class="fas fa-phone"></i> Calls
+    </button>
+</div>
+        </div>
+
+    </div>
+
+    <!-- Modals -->
+    <div id="profile-setup-modal" class="modal">
+        <div class="modal-content">
+            <h2>Set Up Your Profile</h2>
+            <input type="text" id="profile-name" placeholder="Your Name" required>
+            <input type="text" id="profile-emoji" placeholder="Emoji (e.g., 😊)" maxlength="2" required>
+            <button id="save-profile-btn" class="modal-button">Save Profile</button>
+        </div>
+    </div>
+    
+    <div id="add-friend-modal" class="modal">
+        <div class="modal-content">
+            <h2>Add Friend</h2>
+            <p>Enter your friend's unique Bitchat ID.</p>
+            <input type="text" id="friend-id-input" placeholder="ting-xxxx">
+            <button id="send-friend-request-btn" class="modal-button">Send Request</button>
+            <button class="modal-button" style="background-color: #555;" onclick="document.getElementById('add-friend-modal').style.display='none'">Cancel</button>
+        </div>
+    </div>
+    
+    <div id="incoming-call-modal" class="modal">
+        <div class="modal-content">
+            <h2 id="incoming-call-type">Incoming Call</h2>
+            <div id="incoming-caller-emoji" style="font-size: 48px;"></div>
+            <h3 id="incoming-caller-name"></h3>
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button id="accept-call-btn-modal" class="modal-button" style="background-color: #4caf50;">Accept</button>
+                <button id="reject-call-btn-modal" class="modal-button" style="background-color: #e94560;">Reject</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="profile-view-modal" class="modal">
+         <div class="modal-content">
+            <h2>Your Profile</h2>
+            <p>Name: <span id="view-profile-name"></span></p>
+            <p>Emoji: <span id="view-profile-emoji"></span></p>
+            <p>ID: <span id="view-profile-id"></span></p>
+            <input type="text" id="edit-profile-name-input" style="display: none;">
+            <input type="text" id="edit-profile-emoji-input" style="display: none;" maxlength="2">
+            <button id="profile-edit-save-btn" class="modal-button">Edit</button>
+            <button class="modal-button" style="background-color: #555;" onclick="document.getElementById('profile-view-modal').style.display='none'">Close</button>
+        </div>
+    </div>
+
+    <div id="blocked-users-modal" class="modal">
+        <div class="modal-content">
+            <h2>Blocked Users</h2>
+            <div id="blocked-users-list" class="list-container">
+                <div class="empty-state">You haven't blocked anyone.</div>
+            </div>
+            <button class="modal-button" style="background-color: #555;" onclick="document.getElementById('blocked-users-modal').style.display='none'">Close</button>
+        </div>
+    </div>
+
+
+    <!-- Call View -->
+    <div id="call-view">
+        <video id="remote-video" autoplay playsinline></video>
+        <video id="local-video" autoplay playsinline muted></video>
+        <div class="call-info">
+            <div id="call-view-emoji" class="caller-emoji"></div>
+            <div id="call-view-name" class="caller-name"></div>
+            <div id="call-view-status" class="call-status"></div>
+        </div>
+        <div class="call-controls">
+            <button id="end-call-btn">End</button>
+        </div>
+    </div>
+    
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+    <script>
+        // --- THIS IS A TEMPLATE, FULLY WORKING APP REQUIRES MORE CODE ---
+        // This is a comprehensive template demonstrating the structure, UI, and logic flow.
+        // A fully functional real-time app of this complexity would require significantly
+        // more code, especially for WebRTC signaling and robust error handling.
+        
+        // --- Firebase Configuration ---
+        const firebaseConfig = {
+  apiKey: "AIzaSyA0g8djJRl417O-Ev3xJqS6mITzHMDlKEo",
+  authDomain: "call-aap-7ef40.firebaseapp.com",
+  databaseURL: "https://call-aap-7ef40-default-rtdb.firebaseio.com",
+  projectId: "call-aap-7ef40",
+  storageBucket: "call-aap-7ef40.firebasestorage.app",
+  messagingSenderId: "392464758943",
+  appId: "1:392464758943:web:ce5680ea9514e468f94aaa"
+};
+        // Initialize Firebase (if config is provided)
+        // firebase.initializeApp(firebaseConfig);
+        // const auth = firebase.auth();
+        // const db = firebase.database();
+        
+        // --- MOCK DATA & PLACEHOLDER FUNCTIONS ---
+        // As Firebase isn't configured, we'll use mock logic to demonstrate UI flow.
+        
+        // --- Global State ---
+        let currentUser = null; // To hold user UID and profile data
+        let currentChatId = null;
+        let incomingCallSound;
+        
+        // --- DOM Elements ---
+        const authView = document.getElementById('auth-view');
+        const appView = document.getElementById('app-view');
+        const loginForm = document.getElementById('login-form');
+        const signupForm = document.getElementById('signup-form');
+        const toSignupLink = document.getElementById('to-signup-link');
+        const toLoginLink = document.getElementById('to-login-link');
+        const errorMessage = document.getElementById('error-message');
+        const profileSetupModal = document.getElementById('profile-setup-modal');
+        const saveProfileBtn = document.getElementById('save-profile-btn');
+        const logoutBtn = document.getElementById('logout-btn');
+
+        // --- Theme Toggle ---
+        const themeToggleBtn = document.getElementById('theme-toggle-btn');
+        themeToggleBtn.addEventListener('click', () => {
+            document.body.classList.toggle('light-mode');
+            const theme = document.body.classList.contains('light-mode') ? 'light' : 'dark';
+            localStorage.setItem('tingling-theme', theme);
+        });
+        
+        // Apply saved theme on load
+        function applySavedTheme() {
+            const savedTheme = localStorage.getItem('tingling-theme');
+            if (savedTheme === 'light') {
+                document.body.classList.add('light-mode');
+            }
+        }
+        applySavedTheme();
+
+        // --- Auth View Switching ---
+        toSignupLink.addEventListener('click', () => {
+            loginForm.style.display = 'none';
+            document.getElementById('to-signup-text').style.display = 'none';
+            signupForm.style.display = 'flex';
+            document.getElementById('to-login-text').style.display = 'block';
+            errorMessage.textContent = '';
+        });
+        
+        toLoginLink.addEventListener('click', () => {
+            signupForm.style.display = 'none';
+            document.getElementById('to-login-text').style.display = 'none';
+            loginForm.style.display = 'flex';
+            document.getElementById('to-signup-text').style.display = 'block';
+            errorMessage.textContent = '';
+        });
+
+        // --- Mock Authentication Logic ---
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            // In a real app: firebase.auth().signInWithEmailAndPassword(...)
+            console.log("Login attempt");
+            const email = document.getElementById('login-email').value;
+            if (email) {
+                // Simulate successful login
+                showAppView();
+            } else {
+                errorMessage.textContent = "Please enter an email.";
+            }
+        });
+
+        signupForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            // In a real app: firebase.auth().createUserWithEmailAndPassword(...)
+            console.log("Signup attempt");
+            const email = document.getElementById('signup-email').value;
+            if (email) {
+                // On successful signup, show profile setup
+                profileSetupModal.style.display = 'flex';
+            } else {
+                 errorMessage.textContent = "Please enter an email.";
+            }
+        });
+        
+        saveProfileBtn.addEventListener('click', () => {
+            // In a real app, save profile to DB and then show app view
+            console.log("Profile saved");
+            profileSetupModal.style.display = 'none';
+            showAppView();
+        });
+
+        logoutBtn.addEventListener('click', () => {
+            // In a real app: firebase.auth().signOut()
+            authView.style.display = 'flex';
+            appView.style.display = 'none';
+            currentUser = null;
+        });
+
+        function showAppView() {
+            authView.style.display = 'none';
+            appView.style.display = 'flex';
+            // Placeholder: fetch user data, contacts, etc.
+            loadContacts();
+        }
+        
+        // --- Navigation ---
+        const pages = document.querySelectorAll('.page');
+        const navButtons = {
+            'nav-home': 'home-page',
+            'nav-notifications': 'notifications-page',
+            'nav-calls': 'calls-page',
+            'menu-btn': 'menu-page'
+        };
+
+        function switchPage(pageId) {
+            pages.forEach(p => p.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+            // Hide chat view when switching main pages
+            document.getElementById('chat-view').style.display = 'none';
+            document.querySelector('.main-content').style.display = 'block';
+        }
+
+        Object.keys(navButtons).forEach(btnId => {
+            document.getElementById(btnId).addEventListener('click', () => {
+                switchPage(navButtons[btnId]);
+            });
+        });
+        
+        // Default page
+        document.getElementById('nav-home').addEventListener('click', () => switchPage('home-page'));
+
+
+        // --- Chat Functionality ---
+        const chatView = document.getElementById('chat-view');
+        const mainContent = document.querySelector('.main-content');
+        
+        function openChat(contact) {
+            mainContent.style.display = 'none';
+            chatView.style.display = 'flex';
+            document.getElementById('chat-contact-name').textContent = contact.name;
+            document.getElementById('chat-contact-emoji').textContent = contact.emoji;
+            // Clear previous messages
+            const messagesContainer = document.getElementById('chat-messages');
+            messagesContainer.innerHTML = '';
+            // Mock messages
+            messagesContainer.innerHTML += `<div class="message-bubble received">Hey there!</div>`;
+            messagesContainer.innerHTML += `<div class="message-bubble sent">Hi! How are you?</div>`;
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+        
+        document.getElementById('back-to-contacts-btn').addEventListener('click', () => {
+            chatView.style.display = 'none';
+            mainContent.style.display = 'block';
+            switchPage('home-page');
+        });
+
+        // --- Mock Data Loading ---
+        function loadContacts() {
+            const contactsList = document.getElementById('contacts-list');
+            contactsList.innerHTML = ''; // Clear empty state
+            const mockContacts = [
+                { id: '1', name: 'Alice', emoji: '😊' },
+                { id: '2', name: 'Bob', emoji: '😎' }
+            ];
+            mockContacts.forEach(contact => {
+                const item = document.createElement('div');
+                item.className = 'contact-item';
+                item.innerHTML = `
+                    <div>
+                        <span>${contact.emoji}</span>
+                        <span>${contact.name}</span>
+                    </div>
+                    <button data-id="${contact.id}">Chat</button>
+                `;
+                item.querySelector('button').addEventListener('click', () => openChat(contact));
+                contactsList.appendChild(item);
+            });
+        }
+        
+        // --- Add Friend ---
+        document.getElementById('add-friend-btn').addEventListener('click', () => {
+            document.getElementById('add-friend-modal').style.display = 'flex';
+        });
+        
+        document.getElementById('send-friend-request-btn').addEventListener('click', () => {
+            const friendId = document.getElementById('friend-id-input').value;
+            if(friendId) {
+                console.log(`Sending friend request to ${friendId}`);
+                // Real app: search for user by ting-id and write to /requests in DB
+                alert("Friend request sent!");
+                document.getElementById('add-friend-modal').style.display = 'none';
+            }
+        });
+        
+        // --- Profile View/Edit ---
+        document.getElementById('edit-profile-btn').addEventListener('click', () => {
+            // Populate and show the modal
+            // In real app, get data from currentUser object
+            document.getElementById('view-profile-name').textContent = "Your Name";
+            document.getElementById('view-profile-emoji').textContent = "🚀";
+            document.getElementById('view-profile-id').textContent = "ting-1234";
+            document.getElementById('profile-view-modal').style.display = 'flex';
+        });
+
+        // --- WebRTC & Calling ---
+        const callView = document.getElementById('call-view');
+        const endCallBtn = document.getElementById('end-call-btn');
+        const incomingCallModal = document.getElementById('incoming-call-modal');
+        
+        // Prepare ringtone
+        try {
+             const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+             // Base64 encoded WAV file for `incoming.wav` to keep it in a single file
+             const wavBase64 = "UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAAABkYXRhAAAAAA==";
+             const soundData = atob(wavBase64);
+             const buffer = new ArrayBuffer(soundData.length);
+             const view = new Uint8Array(buffer);
+             for(let i=0; i<soundData.length; i++){
+                 view[i] = soundData.charCodeAt(i);
+             }
+             audioContext.decodeAudioData(buffer, (buf) => {
+                 incomingCallSound = audioContext.createBufferSource();
+                 incomingCallSound.buffer = buf;
+                 incomingCallSound.loop = true;
+                 incomingCallSound.connect(audioContext.destination);
+             });
+        } catch (e) {
+            console.error("Web Audio API is not supported in this browser or could not create ringtone.");
+            incomingCallSound = { play: () => {}, stop: () => {} }; // Dummy object
+        }
+
+
+        function startCall(type, contact) {
+             // In a real app:
+             // 1. Get local media stream (navigator.mediaDevices.getUserMedia)
+             // 2. Create RTCPeerConnection
+             // 3. Create offer and send it via Firebase signaling
+             console.log(`Starting ${type} call with ${contact.name}`);
+             
+             document.getElementById('call-view-name').textContent = contact.name;
+             document.getElementById('call-view-emoji').textContent = contact.emoji;
+             document.getElementById('call-view-status').textContent = "Calling...";
+             document.getElementById('remote-video').style.display = (type === 'video') ? 'block' : 'none';
+             document.getElementById('local-video').style.display = (type === 'video') ? 'block' : 'none';
+             callView.style.display = 'flex';
+        }
+        
+        function receiveCall(caller, type) {
+            if (incomingCallSound && incomingCallSound.start) incomingCallSound.start(0);
+            document.getElementById('incoming-caller-name').textContent = caller.name;
+            document.getElementById('incoming-caller-emoji').textContent = caller.emoji;
+            document.getElementById('incoming-call-type').textContent = `Incoming ${type} call`;
+            incomingCallModal.style.display = 'flex';
+        }
+        
+        endCallBtn.addEventListener('click', () => {
+            // In a real app: close peer connection, clear signaling in DB, save call log
+            callView.style.display = 'none';
+            console.log("Call ended");
+        });
+
+        document.getElementById('reject-call-btn-modal').addEventListener('click', () => {
+             if (incomingCallSound && incomingCallSound.stop) incomingCallSound.stop();
+             incomingCallModal.style.display = 'none';
+             // Real app: update firebase to reject call
+        });
+
+        document.getElementById('accept-call-btn-modal').addEventListener('click', () => {
+             if (incomingCallSound && incomingCallSound.stop) incomingCallSound.stop();
+             incomingCallModal.style.display = 'none';
+             // Real app: answer call, setup peer connection
+             callView.style.display = 'flex'; // Go to call screen
+        });
+        
+        // Hook up call buttons
+        document.getElementById('voice-call-btn').addEventListener('click', () => startCall('voice', { name: document.getElementById('chat-contact-name').textContent, emoji: document.getElementById('chat-contact-emoji').textContent }));
+        document.getElementById('video-call-btn').addEventListener('click', () => startCall('video', { name: document.getElementById('chat-contact-name').textContent, emoji: document.getElementById('chat-contact-emoji').textContent }));
+
+        // --- Draggable local video ---
+        const localVideo = document.getElementById('local-video');
+        let isDragging = false;
+        let offsetX, offsetY;
+        
+        localVideo.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            offsetX = e.clientX - localVideo.offsetLeft;
+            offsetY = e.clientY - localVideo.offsetTop;
+            localVideo.style.transition = 'none';
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (isDragging) {
+                localVideo.style.left = `${e.clientX - offsetX}px`;
+                localVideo.style.top = `${e.clientY - offsetY}px`;
+            }
+        });
+
+        document.addEventListener('mouseup', () => {
+            isDragging = false;
+            localVideo.style.transition = '';
+        });
+
+
+        // --- Example of simulating an incoming call for demonstration ---
+        // setTimeout(() => {
+        //     receiveCall({ name: 'Charlie', emoji: '🤠'}, 'video');
+        // }, 15000); // Simulate call after 15 seconds
+
+    </script>
+
+</body>
+</html>
